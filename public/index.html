@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TributoImóvel — PF ou PJ?</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    /* ── TOKENS POR TEMA ─────────────────────────────────────── */
+    :root[data-theme="dark"] {
+      --bg:     #07090f;
+      --bg2:    #0d1117;
+      --card:   #0d1117;
+      --border: rgba(99,130,220,0.13);
+      --bord2:  rgba(99,130,220,0.28);
+      --blue:   #3b82f6;
+      --blue2:  #60a5fa;
+      --bglow:  rgba(59,130,246,0.12);
+      --text:   #e2e8f0;
+      --text2:  #6b7ea0;
+      --text3:  #3a4a63;
+      --nav-bg: rgba(7,9,15,0.88);
+      --input-bg: #0d1117;
+      --ded-bg: rgba(59,130,246,0.08);
+      --ded-border: rgba(59,130,246,0.2);
+      --tip-bg: rgba(59,130,246,0.05);
+      --tip-border: rgba(59,130,246,0.15);
+      --winner-bg: linear-gradient(135deg,rgba(37,99,235,0.13),rgba(14,26,60,0.6));
+      --winner-border: rgba(59,130,246,0.22);
+      --shadow: none;
+    }
+    :root[data-theme="light"] {
+      --bg:     #f0f4f8;
+      --bg2:    #ffffff;
+      --card:   #ffffff;
+      --border: rgba(59,130,246,0.15);
+      --bord2:  rgba(59,130,246,0.35);
+      --blue:   #2563eb;
+      --blue2:  #1d4ed8;
+      --bglow:  rgba(37,99,235,0.08);
+      --text:   #0f172a;
+      --text2:  #475569;
+      --text3:  #94a3b8;
+      --nav-bg: rgba(240,244,248,0.92);
+      --input-bg: #f8fafc;
+      --ded-bg: rgba(37,99,235,0.05);
+      --ded-border: rgba(37,99,235,0.18);
+      --tip-bg: rgba(37,99,235,0.04);
+      --tip-border: rgba(37,99,235,0.12);
+      --winner-bg: linear-gradient(135deg,rgba(219,234,254,0.8),rgba(239,246,255,0.9));
+      --winner-border: rgba(59,130,246,0.25);
+      --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+    }
+
+    /* ── BASE ─────────────────────────────────────────────────── */
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html { transition: background 0.3s; }
+    body {
+      background:var(--bg); color:var(--text);
+      font-family:'Inter',sans-serif; font-size:14px; line-height:1.6; min-height:100vh;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    /* grid bg — só no dark */
+    [data-theme="dark"] body::after {
+      content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
+      background-image:linear-gradient(rgba(59,130,246,0.025) 1px,transparent 1px),
+                       linear-gradient(90deg,rgba(59,130,246,0.025) 1px,transparent 1px);
+      background-size:48px 48px;
+    }
+    [data-theme="dark"] body::before {
+      content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
+      background:radial-gradient(ellipse 70% 40% at 15% 5%,rgba(37,99,235,0.06) 0%,transparent 55%),
+                 radial-gradient(ellipse 50% 35% at 85% 90%,rgba(29,78,216,0.04) 0%,transparent 55%);
+    }
+    [data-theme="light"] body::before,
+    [data-theme="light"] body::after { display:none; }
+
+    .rel{position:relative;z-index:1;} .hidden{display:none!important;}
+
+    /* ── NAV ─────────────────────────────────────────────────── */
+    nav {
+      position:sticky; top:0; z-index:100;
+      background:var(--nav-bg); border-bottom:1px solid var(--border);
+      backdrop-filter:blur(14px);
+      transition: background 0.3s, border-color 0.3s;
+    }
+    .nav-inner{max-width:1100px;margin:0 auto;padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;}
+    .logo{display:flex;align-items:center;gap:10px;font-family:'Sora',sans-serif;font-weight:700;font-size:15px;color:var(--text);}
+    .logo-icon{width:30px;height:30px;border-radius:8px;background:var(--bglow);border:1px solid var(--bord2);display:flex;align-items:center;justify-content:center;transition:all 0.3s;}
+
+    /* ── THEME TOGGLE ────────────────────────────────────────── */
+    .theme-toggle {
+      width:40px; height:22px; border-radius:11px;
+      border:1px solid var(--border);
+      background:var(--bg2);
+      cursor:pointer; position:relative;
+      transition:all 0.25s;
+      flex-shrink:0;
+    }
+    .theme-toggle::after {
+      content:''; position:absolute;
+      top:2px; left:2px;
+      width:16px; height:16px; border-radius:50%;
+      background:var(--blue);
+      transition:transform 0.25s, background 0.25s;
+    }
+    [data-theme="light"] .theme-toggle::after { transform:translateX(18px); }
+    .theme-toggle-wrap {
+      display:flex; align-items:center; gap:8px;
+      font-size:11px; font-weight:500; color:var(--text3);
+    }
+    .theme-icon { font-size:14px; line-height:1; }
+
+    /* ── BUTTONS ─────────────────────────────────────────────── */
+    .btn{display:inline-flex;align-items:center;justify-content:center;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-weight:600;font-size:13px;border-radius:8px;transition:all 0.18s;}
+    .btn-sm{padding:7px 16px;} .btn-full{width:100%;padding:12px 20px;font-size:14px;}
+    .btn-primary{background:var(--blue);color:#fff;box-shadow:0 2px 16px rgba(59,130,246,0.2);}
+    .btn-primary:hover{filter:brightness(1.1);box-shadow:0 4px 24px rgba(59,130,246,0.35);transform:translateY(-1px);}
+    .btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border);}
+    .btn-ghost:hover{border-color:var(--bord2);color:var(--blue);}
+
+    /* ── LAYOUT ──────────────────────────────────────────────── */
+    .main{max-width:1100px;margin:0 auto;padding:48px 24px;}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:12px;transition:border-color 0.2s,background 0.3s,box-shadow 0.3s;box-shadow:var(--shadow);}
+    .card:hover{border-color:var(--bord2);}
+
+    /* ── INPUTS ──────────────────────────────────────────────── */
+    input{
+      width:100%; background:var(--input-bg); border:1px solid var(--border);
+      border-radius:8px; padding:10px 13px; color:var(--text);
+      font-family:'Inter',sans-serif; font-size:13px; outline:none;
+      transition:border-color 0.18s, box-shadow 0.18s, background 0.3s;
+    }
+    input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,130,246,0.1);}
+    input::placeholder{color:var(--text3);}
+    label{display:block;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:5px;transition:color 0.3s;}
+
+    /* ── TABS ────────────────────────────────────────────────── */
+    .tabs{display:inline-flex;gap:3px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:4px;transition:background 0.3s;}
+    .tab{padding:7px 16px;border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;border:none;color:var(--text2);background:transparent;transition:all 0.15s;}
+    .tab.active{background:var(--blue);color:#fff;box-shadow:0 2px 10px rgba(59,130,246,0.3);}
+    .tab:not(.active):hover{color:var(--text);}
+
+    /* ── COMPONENTS ──────────────────────────────────────────── */
+    .sec-label{font-size:10px;font-weight:700;color:var(--blue2);opacity:0.7;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:14px;}
+    .stack{display:flex;flex-direction:column;gap:12px;}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start;}
+    .half{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+    .third{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+    @media(max-width:768px){.grid2{grid-template-columns:1fr;}.third{grid-template-columns:1fr 1fr;}}
+
+    .metric{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:15px 17px;transition:background 0.3s;}
+    .metric-label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px;}
+    .metric-value{font-size:20px;font-weight:600;color:var(--text);font-variant-numeric:tabular-nums;}
+    .metric-sub{font-size:11px;color:var(--text3);margin-top:2px;}
+
+    .winner-wrap{background:var(--winner-bg);border:1px solid var(--winner-border);border-radius:10px;padding:18px 20px;transition:all 0.3s;}
+    .winner-badge{display:inline-flex;align-items:center;gap:5px;background:var(--blue);color:#fff;font-size:11px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;padding:4px 12px;border-radius:6px;}
+
+    .tip{background:var(--tip-bg);border:1px solid var(--tip-border);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--text2);line-height:1.6;transition:all 0.3s;}
+    .tip strong{color:var(--blue);}
+
+    .ded-total{background:var(--ded-bg);border:1px solid var(--ded-border);border-radius:8px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;transition:all 0.3s;}
+
+    .dot{width:6px;height:6px;border-radius:50%;background:var(--blue);animation:pulse 2.2s ease infinite;}
+    @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(59,130,246,0.5);}50%{box-shadow:0 0 0 5px rgba(59,130,246,0);}}
+
+    @keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+    .u1{animation:up 0.4s ease 0.05s both;}.u2{animation:up 0.4s ease 0.12s both;}
+    .u3{animation:up 0.4s ease 0.19s both;}.u4{animation:up 0.4s ease 0.26s both;}
+
+    .spin{width:26px;height:26px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:rot 0.65s linear infinite;}
+    @keyframes rot{to{transform:rotate(360deg);}}
+
+    .err{background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.18);border-radius:8px;padding:10px 14px;color:#ef4444;font-size:12px;}
+    .sticky-top{position:sticky;top:80px;}
+
+    .pill{display:inline-flex;padding:2px 10px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;}
+    .pill-pf{background:rgba(59,130,246,0.1);color:#3b82f6;}
+    .pill-pj{background:rgba(16,185,129,0.1);color:#10b981;}
+    .pill-cmp{background:rgba(139,92,246,0.1);color:#8b5cf6;}
+    .pill-bkv{background:rgba(251,146,60,0.1);color:#f97316;}
+
+
+    /* FOOTER */
+    .footer {
+      position: relative; z-index: 1;
+      background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 50%, #2563eb 100%);
+      margin-top: 80px;
+      padding: 48px 24px 0;
+    }
+    .footer-inner {
+      max-width: 1100px; margin: 0 auto;
+      display: grid; grid-template-columns: 1fr auto; gap: 40px; align-items: start;
+      padding-bottom: 40px;
+    }
+    @media(max-width:640px){ .footer-inner { grid-template-columns: 1fr; gap: 28px; } }
+    .footer-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .footer-logo-icon {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.25);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .footer-brand-name { font-family: 'Sora', sans-serif; font-weight: 800; font-size: 15px; color: #fff; }
+    .footer-brand-sub { font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 1px; }
+    .footer-desc { font-size: 13px; color: rgba(255,255,255,0.75); line-height: 1.75; max-width: 420px; margin-bottom: 18px; }
+    .footer-contacts { display: flex; flex-wrap: wrap; gap: 8px; }
+    .footer-contact-item {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 12px; font-weight: 500; color: #fff;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 7px 12px; border-radius: 8px;
+      text-decoration: none; transition: all 0.2s;
+    }
+    .footer-contact-item:hover { background: rgba(255,255,255,0.22); border-color: rgba(255,255,255,0.4); transform: translateY(-1px); }
+    .footer-contact-whatsapp {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 12px; font-weight: 600; color: #fff;
+      background: #25d366;
+      border: 1px solid #1fba58;
+      padding: 7px 14px; border-radius: 8px;
+      text-decoration: none; transition: all 0.2s;
+    }
+    .footer-contact-whatsapp:hover { background: #1fba58; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(37,211,102,0.35); }
+    .footer-right { text-align: right; }
+    .footer-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 8px; padding: 8px 14px; margin-bottom: 14px;
+    }
+    .footer-badge-text { font-size: 11px; font-weight: 700; color: #fff; letter-spacing: 0.05em; text-transform: uppercase; }
+    .footer-meta { font-size: 12px; color: rgba(255,255,255,0.65); line-height: 1.9; }
+    .footer-meta strong { color: #fff; }
+    .footer-meta a { color: rgba(255,255,255,0.8); text-decoration: none; transition: color 0.2s; }
+    .footer-meta a:hover { color: #fff; }
+    .footer-bottom-bar {
+      background: rgba(0,0,0,0.2);
+      margin: 0 -24px;
+      padding: 14px 24px;
+    }
+    .footer-bottom {
+      max-width: 1100px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+    }
+    .footer-copy { font-size: 11px; color: rgba(255,255,255,0.5); }
+    .footer-disclaimer { font-size: 11px; color: rgba(255,255,255,0.5); max-width: 500px; text-align: right; }
+    @media(max-width:640px){ .footer-bottom { flex-direction: column; text-align: center; } .footer-disclaimer { text-align: center; } }
+
+    ::-webkit-scrollbar{width:5px;}
+    ::-webkit-scrollbar-track{background:var(--bg);}
+    ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner rel">
+    <div class="logo">
+      <div class="logo-icon">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+      </div>
+      TributoImóvel
+    </div>
+
+    <div style="display:flex;align-items:center;gap:16px">
+      <!-- Theme toggle -->
+      <div class="theme-toggle-wrap">
+        <span class="theme-icon" id="theme-icon-left">🌙</span>
+        <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Alternar tema"></button>
+        <span class="theme-icon" id="theme-icon-right">☀️</span>
+      </div>
+
+      <div id="nav-auth" style="display:flex;align-items:center;gap:8px">
+        <button class="btn btn-ghost btn-sm" onclick="showPage('login')">Entrar</button>
+        <button class="btn btn-primary btn-sm" onclick="showPage('register')">Criar conta</button>
+      </div>
+      <div id="nav-user" style="display:none;align-items:center;gap:12px">
+        <span id="nav-name" style="font-size:13px;color:var(--text2)"></span>
+        <button class="btn btn-ghost btn-sm" onclick="showPage('history')">Histórico</button>
+        <button onclick="logout()" style="font-size:12px;color:var(--text3);background:none;border:none;cursor:pointer">Sair</button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="main rel">
+
+  <!-- HOME -->
+  <div id="page-home">
+    <div style="margin-bottom:44px">
+      <div class="u1" style="display:inline-flex;align-items:center;gap:8px;padding:5px 13px;border-radius:20px;background:var(--bglow);border:1px solid var(--bord2);margin-bottom:18px">
+        <div class="dot"></div>
+        <span style="font-size:11px;font-weight:600;color:var(--blue);letter-spacing:.07em;text-transform:uppercase">Motor fiscal ativo</span>
+      </div>
+      <h1 class="u2" style="font-family:'Sora',sans-serif;font-size:clamp(34px,5.5vw,60px);font-weight:800;color:var(--text);line-height:1.1;margin-bottom:14px">
+        PF ou PJ?<br/><span style="color:var(--blue)">Descubra agora.</span>
+      </h1>
+      <p class="u3" style="color:var(--text2);font-size:15px;max-width:500px;line-height:1.75">
+        Calculamos todas as deduções legais permitidas pela Receita Federal para você não pagar imposto a mais.
+      </p>
+    </div>
+
+    <div class="u4">
+      <div class="tabs" style="margin-bottom:20px">
+        <button class="tab active" id="tab-compare"   onclick="setTab('compare')">Comparar PF vs PJ</button>
+        <button class="tab"        id="tab-breakeven" onclick="setTab('breakeven')">Break-even</button>
+        <button class="tab"        id="tab-pf"        onclick="setTab('pf')">Só PF</button>
+        <button class="tab"        id="tab-pj"        onclick="setTab('pj')">Só PJ</button>
+      </div>
+
+      <div class="grid2">
+        <div>
+
+          <!-- COMPARE -->
+          <div id="form-compare" class="stack">
+            <div class="card" style="padding:20px">
+              <div class="sec-label">Dados do Aluguel</div>
+              <div class="stack">
+                <div><label>Aluguel mensal bruto (R$)</label><input id="c-rent" type="number" placeholder="Ex: 5000" oninput="updateDedTotal('c')"/></div>
+                <div><label>Meses alugados no ano</label><input id="c-months" type="number" value="12"/></div>
+              </div>
+            </div>
+            <div class="card" style="padding:20px">
+              <div class="sec-label">Despesas Dedutíveis PF — Lei 7.713/1988</div>
+              <div class="tip" style="margin-bottom:14px">Informe apenas despesas <strong>pagas por você</strong>. Deduzir incorretamente pode causar <strong>malha fina</strong>.</div>
+              <div class="stack">
+                <div class="half">
+                  <div><label>IPTU mensal (R$)</label><input id="c-iptu" type="number" value="0" oninput="updateDedTotal('c')"/></div>
+                  <div><label>Condomínio mensal (R$)</label><input id="c-cond" type="number" value="0" oninput="updateDedTotal('c')"/></div>
+                </div>
+                <div class="half">
+                  <div><label>Taxa de administração (R$)</label><input id="c-adm" type="number" value="0" oninput="updateDedTotal('c')"/></div>
+                  <div><label>Seguro do imóvel (R$)</label><input id="c-seg" type="number" value="0" oninput="updateDedTotal('c')"/></div>
+                </div>
+                <div class="half">
+                  <div><label>Juros financiamento (R$)</label><input id="c-juro" type="number" value="0" oninput="updateDedTotal('c')"/></div>
+                  <div><label>Desp. cobrança/judicial (R$)</label><input id="c-cob" type="number" value="0" oninput="updateDedTotal('c')"/></div>
+                </div>
+                <div class="ded-total">
+                  <span style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em">Total deduções/mês</span>
+                  <span id="c-ded-total" style="font-size:16px;font-weight:700;color:var(--blue);font-variant-numeric:tabular-nums">R$ 0,00</span>
+                </div>
+              </div>
+            </div>
+            <div class="card" style="padding:20px">
+              <div class="sec-label">Pessoa Jurídica</div>
+              <div class="half">
+                <div><label>Meses faturados</label><input id="c-inv" type="number" value="12"/></div>
+                <div><label>Contador/mês (R$)</label><input id="c-acc" type="number" value="0"/></div>
+              </div>
+            </div>
+            <button class="btn btn-primary btn-full" onclick="calcCompare()">Calcular agora →</button>
+          </div>
+
+          <!-- BREAKEVEN -->
+          <div id="form-breakeven" class="stack hidden">
+            <div class="card" style="padding:20px">
+              <div class="sec-label">Despesas Dedutíveis PF</div>
+              <div class="stack">
+                <div class="third">
+                  <div><label>IPTU (R$/mês)</label><input id="b-iptu" type="number" value="0" oninput="updateDedTotal('b')"/></div>
+                  <div><label>Condomínio (R$/mês)</label><input id="b-cond" type="number" value="0" oninput="updateDedTotal('b')"/></div>
+                  <div><label>Administração (R$/mês)</label><input id="b-adm" type="number" value="0" oninput="updateDedTotal('b')"/></div>
+                </div>
+                <div class="third">
+                  <div><label>Seguro (R$/mês)</label><input id="b-seg" type="number" value="0" oninput="updateDedTotal('b')"/></div>
+                  <div><label>Juros financ. (R$/mês)</label><input id="b-juro" type="number" value="0" oninput="updateDedTotal('b')"/></div>
+                  <div><label>Desp. cobrança (R$/mês)</label><input id="b-cob" type="number" value="0" oninput="updateDedTotal('b')"/></div>
+                </div>
+                <div class="ded-total">
+                  <span style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em">Total deduções/mês</span>
+                  <span id="b-ded-total" style="font-size:16px;font-weight:700;color:var(--blue);font-variant-numeric:tabular-nums">R$ 0,00</span>
+                </div>
+              </div>
+            </div>
+            <div class="card" style="padding:20px">
+              <div class="sec-label">Parâmetros PJ e Intervalo</div>
+              <div class="stack">
+                <div class="half">
+                  <div><label>Contador PJ (R$/mês)</label><input id="b-acc" type="number" value="0"/></div>
+                  <div><label>Meses faturados</label><input id="b-inv" type="number" value="12"/></div>
+                </div>
+                <div class="half">
+                  <div><label>Mínimo (R$/mês)</label><input id="b-min" type="number" value="1000"/></div>
+                  <div><label>Máximo (R$/mês)</label><input id="b-max" type="number" value="100000"/></div>
+                </div>
+              </div>
+            </div>
+            <button class="btn btn-primary btn-full" onclick="calcBreakeven()">Calcular break-even →</button>
+          </div>
+
+          <!-- PF -->
+          <div id="form-pf" class="stack hidden">
+            <div class="card" style="padding:20px">
+              <div class="sec-label">Dados do Aluguel</div>
+              <div class="half">
+                <div><label>Aluguel mensal bruto (R$)</label><input id="pf-rent" type="number" placeholder="Ex: 5000" oninput="updateDedTotal('pf')"/></div>
+                <div><label>Meses alugados</label><input id="pf-months" type="number" value="12"/></div>
+              </div>
+            </div>
+            <div class="card" style="padding:20px">
+              <div class="sec-label">Despesas Dedutíveis — Lei 7.713/1988</div>
+              <div class="tip" style="margin-bottom:14px">Informe apenas despesas <strong>pagas por você</strong>. Reformas e benfeitorias <strong>não são dedutíveis</strong> no carnê-leão.</div>
+              <div class="stack">
+                <div class="half">
+                  <div><label>IPTU mensal (R$)</label><input id="pf-iptu" type="number" value="0" oninput="updateDedTotal('pf')"/></div>
+                  <div><label>Condomínio mensal (R$)</label><input id="pf-cond" type="number" value="0" oninput="updateDedTotal('pf')"/></div>
+                </div>
+                <div class="half">
+                  <div><label>Taxa de administração (R$)</label><input id="pf-adm" type="number" value="0" oninput="updateDedTotal('pf')"/></div>
+                  <div><label>Seguro do imóvel (R$)</label><input id="pf-seg" type="number" value="0" oninput="updateDedTotal('pf')"/></div>
+                </div>
+                <div class="half">
+                  <div><label>Juros financiamento (R$)</label><input id="pf-juro" type="number" value="0" oninput="updateDedTotal('pf')"/></div>
+                  <div><label>Desp. cobrança/judicial (R$)</label><input id="pf-cob" type="number" value="0" oninput="updateDedTotal('pf')"/></div>
+                </div>
+                <div class="ded-total">
+                  <span style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em">Total deduções/mês</span>
+                  <span id="pf-ded-total" style="font-size:16px;font-weight:700;color:var(--blue);font-variant-numeric:tabular-nums">R$ 0,00</span>
+                </div>
+              </div>
+            </div>
+            <button class="btn btn-primary btn-full" onclick="calcPF()">Calcular PF →</button>
+          </div>
+
+          <!-- PJ -->
+          <div id="form-pj" class="stack hidden">
+            <div class="card" style="padding:20px">
+              <div class="sec-label">Pessoa Jurídica — Lucro Presumido</div>
+              <div class="stack">
+                <div><label>Receita mensal (R$)</label><input id="pj-rev" type="number" placeholder="Ex: 8000"/></div>
+                <div class="half">
+                  <div><label>Meses faturados</label><input id="pj-months" type="number" value="12"/></div>
+                  <div><label>Contador/mês (R$)</label><input id="pj-acc" type="number" value="0"/></div>
+                </div>
+              </div>
+            </div>
+            <button class="btn btn-primary btn-full" onclick="calcPJ()">Calcular PJ →</button>
+          </div>
+
+        </div>
+
+        <!-- RESULT -->
+        <div class="sticky-top">
+          <div id="res-empty" class="card" style="padding:48px;text-align:center">
+            <div style="width:40px;height:40px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;margin:0 auto 12px">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+            </div>
+            <p style="color:var(--text3);font-size:13px">Preencha os dados e calcule</p>
+          </div>
+          <div id="res-load" class="card hidden" style="padding:48px;text-align:center">
+            <div class="spin" style="margin:0 auto 12px"></div>
+            <p style="color:var(--text3);font-size:12px">calculando...</p>
+          </div>
+          <div id="res-out" class="stack hidden"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOGIN -->
+  <div id="page-login" class="hidden" style="max-width:420px;margin:0 auto">
+    <div style="margin-bottom:32px">
+      <h2 style="font-family:'Sora',sans-serif;font-size:32px;font-weight:800;color:var(--text);margin-bottom:6px">Bem-vindo de volta.</h2>
+      <p style="color:var(--text2)">Entre para salvar suas simulações.</p>
+    </div>
+    <div class="card stack" style="padding:28px">
+      <div><label>Email</label><input id="l-email" type="email" placeholder="seu@email.com"/></div>
+      <div><label>Senha</label><input id="l-pass" type="password" placeholder="••••••"/></div>
+      <div id="l-err" class="err hidden"></div>
+      <button class="btn btn-primary btn-full" style="padding:12px" onclick="doLogin()">Entrar →</button>
+      <p style="text-align:center;color:var(--text3);font-size:13px">Não tem conta? <button onclick="showPage('register')" style="color:var(--blue);background:none;border:none;cursor:pointer;font-size:13px">Criar agora</button></p>
+    </div>
+  </div>
+
+  <!-- REGISTER -->
+  <div id="page-register" class="hidden" style="max-width:420px;margin:0 auto">
+    <div style="margin-bottom:32px">
+      <h2 style="font-family:'Sora',sans-serif;font-size:32px;font-weight:800;color:var(--text);margin-bottom:6px">Crie sua conta.</h2>
+      <p style="color:var(--text2)">Salve e acompanhe todas as simulações.</p>
+    </div>
+    <div class="card stack" style="padding:28px">
+      <div><label>Nome</label><input id="r-name" type="text" placeholder="Seu nome"/></div>
+      <div><label>Email</label><input id="r-email" type="email" placeholder="seu@email.com"/></div>
+      <div><label>Senha</label><input id="r-pass" type="password" placeholder="mínimo 6 caracteres"/></div>
+      <div id="r-err" class="err hidden"></div>
+      <button class="btn btn-primary btn-full" style="padding:12px" onclick="doRegister()">Criar conta →</button>
+      <p style="text-align:center;color:var(--text3);font-size:13px">Já tem conta? <button onclick="showPage('login')" style="color:var(--blue);background:none;border:none;cursor:pointer;font-size:13px">Entrar</button></p>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div id="page-history" class="hidden">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:32px">
+      <div>
+        <h2 style="font-family:'Sora',sans-serif;font-size:30px;font-weight:800;color:var(--text);margin-bottom:4px">Histórico</h2>
+        <p style="color:var(--text2)">Suas últimas 50 simulações.</p>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="showPage('home')">← Voltar</button>
+    </div>
+    <div id="hist-list" class="stack"></div>
+  </div>
+
+</div>
+
+<script>
+const API='http://localhost:3000';
+let token=localStorage.getItem('token');
+let user=JSON.parse(localStorage.getItem('user')||'null');
+
+// ── TEMA ──────────────────────────────────────────────────────
+function toggleTheme(){
+  const html=document.documentElement;
+  const current=html.getAttribute('data-theme');
+  const next=current==='dark'?'light':'dark';
+  html.setAttribute('data-theme',next);
+  localStorage.setItem('theme',next);
+}
+// Restaura tema salvo
+(function(){
+  const saved=localStorage.getItem('theme')||'dark';
+  document.documentElement.setAttribute('data-theme',saved);
+})();
+
+// ── AUTH ──────────────────────────────────────────────────────
+function updateNav(){
+  const a=document.getElementById('nav-auth'),u=document.getElementById('nav-user');
+  if(token&&user){a.style.display='none';u.style.display='flex';document.getElementById('nav-name').textContent=user.name||user.email;}
+  else{a.style.display='flex';u.style.display='none';}
+}
+function logout(){token=null;user=null;localStorage.removeItem('token');localStorage.removeItem('user');updateNav();showPage('home');}
+
+// ── PAGES / TABS ──────────────────────────────────────────────
+function showPage(p){['home','login','register','history'].forEach(x=>document.getElementById('page-'+x).classList.toggle('hidden',x!==p));if(p==='history')loadHistory();}
+function setTab(t){['compare','breakeven','pf','pj'].forEach(x=>{document.getElementById('tab-'+x).className='tab'+(x===t?' active':'');document.getElementById('form-'+x).classList.toggle('hidden',x!==t);});clearRes();}
+
+// ── RESULTS ───────────────────────────────────────────────────
+function showLoad(){document.getElementById('res-empty').classList.add('hidden');document.getElementById('res-load').classList.remove('hidden');document.getElementById('res-out').classList.add('hidden');}
+function clearRes(){document.getElementById('res-empty').classList.remove('hidden');document.getElementById('res-load').classList.add('hidden');document.getElementById('res-out').classList.add('hidden');}
+function showRes(html){document.getElementById('res-empty').classList.add('hidden');document.getElementById('res-load').classList.add('hidden');const el=document.getElementById('res-out');el.innerHTML=html;el.classList.remove('hidden');}
+
+const fmt=n=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(n);
+const pct=n=>(n*100).toFixed(2)+'%';
+const metric=(label,val,sub)=>`<div class="metric"><div class="metric-label">${label}</div><div class="metric-value">${val}</div>${sub?`<div class="metric-sub">${sub}</div>`:''}</div>`;
+const v=id=>+document.getElementById(id).value||0;
+
+function updateDedTotal(p){
+  const total=['iptu','cond','adm','seg','juro','cob'].reduce((s,k)=>s+v(p+'-'+k),0);
+  const el=document.getElementById(p+'-ded-total');
+  if(el)el.textContent=fmt(total);
+}
+function getDed(p){return{iptu:v(p+'-iptu'),condominio:v(p+'-cond'),administracao:v(p+'-adm'),seguro:v(p+'-seg'),juroFinanciamento:v(p+'-juro'),despesasCobranca:v(p+'-cob')};}
+
+async function call(path,body){
+  const h={'Content-Type':'application/json'};
+  if(token)h['Authorization']='Bearer '+token;
+  return(await fetch(API+path,{method:'POST',headers:h,body:JSON.stringify(body)})).json();
+}
+
+// ── CALCULATORS ───────────────────────────────────────────────
+async function calcCompare(){
+  showLoad();
+  const rev=v('c-rent');
+  const d=await call('/api/compare',{
+    pf:{monthlyRent:rev,monthsRented:v('c-months'),deductions:getDed('c')},
+    pj:{monthlyRevenue:rev,monthsInvoiced:v('c-inv'),accountingCostMonthly:v('c-acc')}
+  });
+  if(d.error){showRes(`<div class="err">${d.error}</div>`);return;}
+  showRes(`
+    <div class="winner-wrap">
+      <div style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Veredito</div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span class="winner-badge">✓ ${d.winner} vence</span>
+        <span style="color:var(--text2);font-size:13px">economia de <strong style="color:var(--blue)">${fmt(d.annualDifference)}/ano</strong></span>
+      </div>
+    </div>
+    <div class="half">
+      ${metric('Imposto PF / ano',fmt(d.pf.totalTaxPaid),'alíquota '+pct(d.pf.effectiveTaxRate))}
+      ${metric('Imposto PJ / ano',fmt(d.pj.totalTaxPaid),'alíquota '+pct(d.pj.effectiveTaxRate))}
+    </div>
+    <p style="font-size:11px;color:var(--text3);text-align:center">${token?'✓ simulação salva no histórico':`<button onclick="showPage('login')" style="color:var(--blue);background:none;border:none;cursor:pointer">Entre</button> para salvar`}</p>
+  `);
+}
+
+async function calcBreakeven(){
+  showLoad();
+  const d=await call('/api/breakeven',{deductions:getDed('b'),accountingCostMonthly:v('b-acc'),monthsInvoiced:v('b-inv'),minRevenue:v('b-min'),maxRevenue:v('b-max')});
+  if(d.error){showRes(`<div class="err">${d.error}</div>`);return;}
+  if(!d.breakevenMonthly){showRes(`<div class="card" style="padding:20px;color:var(--text2);font-size:13px">${d.message}</div>`);return;}
+  showRes(`
+    <div class="winner-wrap">
+      <div style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Ponto de virada</div>
+      <div style="font-size:32px;font-weight:700;color:var(--blue);font-variant-numeric:tabular-nums">${fmt(d.breakevenMonthly)}<span style="font-size:14px;color:var(--text2)">/mês</span></div>
+      <div style="font-size:12px;color:var(--text3);margin-top:4px">a partir daqui, PJ paga menos imposto</div>
+    </div>
+    <div class="half">
+      ${metric('Break-even anual',fmt(d.breakevenAnnual))}
+      ${metric('Imposto PF neste ponto',fmt(d.pfTaxAtBreakeven))}
+    </div>
+  `);
+}
+
+async function calcPF(){
+  showLoad();
+  const d=await call('/api/pf',{monthlyRent:v('pf-rent'),monthsRented:v('pf-months'),deductions:getDed('pf')});
+  if(d.error){showRes(`<div class="err">${d.error}</div>`);return;}
+  const rows=Object.entries({'IPTU':d.deductionsBreakdown.iptu,'Condomínio':d.deductionsBreakdown.condominio,'Administração':d.deductionsBreakdown.administracao,'Seguro':d.deductionsBreakdown.seguro,'Juros financ.':d.deductionsBreakdown.juroFinanciamento,'Desp. cobrança':d.deductionsBreakdown.despesasCobranca})
+    .filter(([,vl])=>vl>0).map(([k,vl])=>`<div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text2)">${k}</span><span style="color:var(--text);font-variant-numeric:tabular-nums">${fmt(vl)}</span></div>`).join('');
+  showRes(`<div class="stack">
+    ${metric('Imposto total / ano',fmt(d.totalTaxPaid),'alíquota efetiva '+pct(d.effectiveTaxRate))}
+    <div class="half">${metric('Receita bruta anual',fmt(d.grossAnnualIncome))}${metric('Base tributável',fmt(d.taxableAnnualBase))}</div>
+    ${d.deductibleAnnualExpenses>0?`<div class="metric"><div class="metric-label" style="margin-bottom:10px">Deduções aplicadas / ano — ${fmt(d.deductibleAnnualExpenses)}</div>${rows}</div>`:''}
+  </div>`);
+}
+
+async function calcPJ(){
+  showLoad();
+  const d=await call('/api/pj',{monthlyRevenue:v('pj-rev'),monthsInvoiced:v('pj-months'),accountingCostMonthly:v('pj-acc')});
+  if(d.error){showRes(`<div class="err">${d.error}</div>`);return;}
+  showRes(`<div class="stack">
+    ${metric('Imposto total / ano',fmt(d.totalTaxPaid),'alíquota efetiva '+pct(d.effectiveTaxRate))}
+    ${metric('Receita bruta anual',fmt(d.grossAnnualRevenue))}
+    ${metric('Base presumida (32%)',fmt(d.presumedProfitBase))}
+  </div>`);
+}
+
+async function doLogin(){
+  const err=document.getElementById('l-err');err.classList.add('hidden');
+  const r=await fetch(API+'/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:document.getElementById('l-email').value,password:document.getElementById('l-pass').value})});
+  const d=await r.json();
+  if(d.error){err.textContent=d.error;err.classList.remove('hidden');return;}
+  token=d.token;user=d.user;localStorage.setItem('token',token);localStorage.setItem('user',JSON.stringify(user));updateNav();showPage('home');
+}
+
+async function doRegister(){
+  const err=document.getElementById('r-err');err.classList.add('hidden');
+  const r=await fetch(API+'/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:document.getElementById('r-name').value,email:document.getElementById('r-email').value,password:document.getElementById('r-pass').value})});
+  const d=await r.json();
+  if(d.error){err.textContent=d.error;err.classList.remove('hidden');return;}
+  token=d.token;user=d.user;localStorage.setItem('token',token);localStorage.setItem('user',JSON.stringify(user));updateNav();showPage('home');
+}
+
+async function loadHistory(){
+  if(!token){showPage('login');return;}
+  const r=await fetch(API+'/api/simulations',{headers:{'Authorization':'Bearer '+token}});
+  const data=await r.json();
+  const list=document.getElementById('hist-list');
+  if(!data.length){list.innerHTML='<div class="card" style="padding:40px;text-align:center;color:var(--text3);font-size:13px">Nenhuma simulação salva ainda.</div>';return;}
+  const labels={PF:'Pessoa Física',PJ:'Pessoa Jurídica',COMPARE:'Comparativo',BREAKEVEN:'Break-even'};
+  const pills={PF:'pill-pf',PJ:'pill-pj',COMPARE:'pill-cmp',BREAKEVEN:'pill-bkv'};
+  list.innerHTML=data.map(s=>{
+    const date=new Date(s.createdAt).toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    let sum='';
+    if(s.type==='COMPARE')sum=`Vencedor: <strong>${s.result.winner}</strong> · Economia: <span style="color:var(--blue)">${fmt(s.result.annualDifference)}/ano</span>`;
+    if(s.type==='BREAKEVEN')sum=s.result.breakevenMonthly?`Break-even: <span style="color:var(--blue)">${fmt(s.result.breakevenMonthly)}/mês</span>`:'PJ não supera PF no intervalo';
+    if(s.type==='PF'||s.type==='PJ')sum=`Imposto: <span style="color:var(--blue)">${fmt(s.result.totalTaxPaid)}/ano</span> · Alíquota: ${pct(s.result.effectiveTaxRate)}`;
+    return `<div class="card" style="padding:16px 20px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span class="pill ${pills[s.type]||''}">${labels[s.type]||s.type}</span><span style="font-size:11px;color:var(--text3)">${date}</span></div><p style="font-size:13px;color:var(--text2)">${sum}</p></div>`;
+  }).join('');
+}
+
+updateNav();
+</script>
+
+<!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div>
+        <div class="footer-brand">
+          <div class="footer-logo-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+            </svg>
+          </div>
+          <div>
+            <div class="footer-brand-name">STR SOFTWARE</div>
+            <div class="footer-brand-sub">Uma marca Cotawebseguros</div>
+          </div>
+        </div>
+        <p class="footer-desc">
+          Desenvolvemos sistemas web sob encomenda de alta performance para empresas que não aceitam o comum.
+          Esta calculadora foi desenvolvida pela STR Software como exemplo de produto digital especializado.
+        </p>
+        <div class="footer-contacts">
+          <a href="https://www.strsoftware.com.br" target="_blank" class="footer-contact-item">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            strsoftware.com.br
+          </a>
+          <a href="tel:11976661297" class="footer-contact-item">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.62 3.38 2 2 0 0 1 3.59 1.22h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            (11) 97666-1297
+          </a>
+          <a href="https://wa.me/5511976661297?text=Olá!%20Vim%20pelo%20TributoImóvel%20e%20gostaria%20de%20saber%20mais%20sobre%20sistemas%20web." target="_blank" class="footer-contact-whatsapp">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
+            WhatsApp
+          </a>
+        </div>
+      </div>
+      <div class="footer-right">
+        <div class="footer-badge">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span class="footer-badge-text">Software sob encomenda</span>
+        </div>
+        <div class="footer-meta">
+          <strong>Cotawebseguros</strong><br/>
+          CNPJ: 23.659.612/0001-96<br/>
+          <a href="https://www.strsoftware.com.br" target="_blank">www.strsoftware.com.br</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom-bar">
+      <div class="footer-bottom">
+        <span class="footer-copy">© 2025 STR Software · Todos os direitos reservados</span>
+        <span class="footer-disclaimer">Esta calculadora é uma ferramenta de apoio e não substitui a orientação de um contador.</span>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
