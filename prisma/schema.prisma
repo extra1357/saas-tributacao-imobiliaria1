@@ -1,29 +1,29 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
-  provider = "postgresql"
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
-  id        String   @id @default(uuid())
+  id        String   @id @default(cuid())
+  name      String?
   email     String   @unique
   password  String
-  name      String?
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
   simulations Simulation[]
 }
 
 model Simulation {
-  id        String   @id @default(uuid())
+  id        String   @id @default(cuid())
   userId    String
+  user      User     @relation(fields: [userId], references: [id])
   type      String
   input     Json
   result    Json
   createdAt DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id])
 }
