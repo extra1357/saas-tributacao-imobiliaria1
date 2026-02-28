@@ -14,6 +14,9 @@ app.use(express.static(require("path").join(__dirname, "../../public")));
 app.get("/", (_req, res) => {
   res.sendFile(require("path").join(__dirname, "../../public/index.html"));
 });
+app.get("/", (_req, res) => {
+  res.sendFile(require("path").join(__dirname, "../../public/index.html"));
+});
 
 app.get("/health", (_req, res) => {
   res.json({ status: "ok", version: "1.0.0" });
