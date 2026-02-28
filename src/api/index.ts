@@ -10,7 +10,7 @@ const app = express();
 const PORT = process.env.PORT ?? 3000;
 
 app.use(express.json());
-app.use(express.static(require("path").join(process.cwd(), "public")));
+app.use(express.static(require("path").join(__dirname, "../../public")));
 
 app.get("/health", (_req, res) => {
   res.json({ status: "ok", version: "1.0.0" });
