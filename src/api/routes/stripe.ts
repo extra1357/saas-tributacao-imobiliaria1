@@ -1,4 +1,4 @@
-import { Router, Request, Response } from "express";
+import express, { Router, Request, Response } from "express";
 import Stripe from "stripe";
 import prisma from "../../services/prisma";
 import { authenticate, AuthRequest } from "../middleware/auth";
@@ -6,7 +6,7 @@ import { authenticate, AuthRequest } from "../middleware/auth";
 export const stripeRouter = Router();
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2025-01-27.acacia",
+  apiVersion: "2026-02-25.clover",
 });
 
 const PRICE_ID = process.env.STRIPE_PRICE_ID!;
@@ -22,7 +22,6 @@ stripeRouter.post("/checkout", authenticate, async (req: AuthRequest, res: Respo
     return res.status(400).json({ error: "Você já é PRO." });
   }
 
-  // Cria ou reutiliza customer no Stripe
   let customerId = user.stripeCustomerId;
   if (!customerId) {
     const customer = await stripe.customers.create({
@@ -92,10 +91,12 @@ stripeRouter.post(
       }
 
       case "invoice.payment_failed": {
-        const invoice = event.data.object as Stripe.Invoice;
-        if (invoice.subscription) {
+        // Na versão 2026-02-25.clover, usa parent ao invés de subscription
+        const invoice = event.data.object as any;
+        const subscriptionId = invoice.subscription ?? invoice.parent?.subscription_details?.subscription;
+        if (subscriptionId) {
           await prisma.user.updateMany({
-            where: { stripeSubscriptionId: invoice.subscription as string },
+            where: { stripeSubscriptionId: subscriptionId },
             data: { plan: "FREE" },
           });
         }
@@ -121,6 +122,3 @@ stripeRouter.get("/portal", authenticate, async (req: AuthRequest, res: Response
 
   return res.json({ url: session.url });
 });
-
-// Precisa importar express aqui para o raw body do webhook
-import express from "express";
