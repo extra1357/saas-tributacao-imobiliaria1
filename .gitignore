@@ -35,3 +35,5 @@ index.html
 tree
 ts-node
 saas-tributacao-imobiliaria@1.0.0
+.vercel
+.env*.local

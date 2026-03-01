@@ -7,12 +7,16 @@ datasource db {
 }
 
 model User {
-  id          String       @id @default(uuid())
-  name        String?
-  email       String       @unique
-  password    String
-  createdAt   DateTime     @default(now())
-  simulations Simulation[]
+  id                   String       @id @default(uuid())
+  name                 String?
+  email                String       @unique
+  password             String
+  plan                 String       @default("FREE") // FREE | PRO
+  stripeCustomerId     String?      @unique
+  stripeSubscriptionId String?      @unique
+  planExpiresAt        DateTime?
+  createdAt            DateTime     @default(now())
+  simulations          Simulation[]
 }
 
 model Simulation {
