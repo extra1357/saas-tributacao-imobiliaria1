@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import express from "express";
 import { pfRouter } from "./routes/pf";
 import { pjRouter } from "./routes/pj";
