@@ -1,0 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.IRPJ_ADDITIONAL_RATE = exports.IRPJ_ADDITIONAL_THRESHOLD_ANNUAL = exports.COFINS_RATE = exports.PIS_RATE = exports.CSLL_RATE = exports.IRPJ_RATE = exports.PRESUMED_PROFIT_RATE = void 0;
+exports.PRESUMED_PROFIT_RATE = 0.32;
+exports.IRPJ_RATE = 0.15;
+exports.CSLL_RATE = 0.09;
+exports.PIS_RATE = 0.0065;
+exports.COFINS_RATE = 0.03;
+exports.IRPJ_ADDITIONAL_THRESHOLD_ANNUAL = 240000;
+exports.IRPJ_ADDITIONAL_RATE = 0.10;
