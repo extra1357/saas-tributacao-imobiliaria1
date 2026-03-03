@@ -6,15 +6,17 @@ import { compareRouter } from "./routes/compare";
 import { breakevenRouter } from "./routes/breakeven";
 import { authRouter } from "./routes/auth";
 import { simulationsRouter } from "./routes/simulations";
+import { stripeRouter } from "./routes/stripe";
 
 const app = express();
 const PORT = process.env.PORT ?? 3000;
 
+// Webhook do Stripe precisa do raw body — deve vir ANTES do express.json()
+app.use("/api/stripe/webhook", express.raw({ type: "application/json" }));
+
 app.use(express.json());
 app.use(express.static(require("path").join(__dirname, "../../public")));
-app.get("/", (_req, res) => {
-  res.sendFile(require("path").join(__dirname, "../../public/index.html"));
-});
+
 app.get("/", (_req, res) => {
   res.sendFile(require("path").join(__dirname, "../../public/index.html"));
 });
@@ -24,6 +26,7 @@ app.get("/health", (_req, res) => {
 });
 
 app.use("/api/auth", authRouter);
+app.use("/api/stripe", stripeRouter);
 app.use("/api/pf", pfRouter);
 app.use("/api/pj", pjRouter);
 app.use("/api/compare", compareRouter);
